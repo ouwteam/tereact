@@ -1,13 +1,12 @@
+import { handleIndex } from "./routes/main.route";
 import { wss } from "./servers/ws";
-import { initHttpServer, registerRoutes } from "./servers/www";
+import { initHttpServer, registerRouters } from "./servers/www";
+import messagerRoute from "./routes/messager.route";
 
 initHttpServer(3000, "localhost", wss);
-registerRoutes(function (app, wss) {
-  app.get("/", (req, res) => {
-    res.send({
-      online_user: wss.clients.size,
-      ws_address: wss.address(),
-      httpVersion: req.httpVersion,
-    });
-  });
+registerRouters(function (app, wss) {
+  messagerRoute.setSocketServer(wss);
+
+  app.get("/", (req, res) => handleIndex(req, res, wss));
+  app.use("/messager", messagerRoute.router);
 });
