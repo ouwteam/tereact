@@ -1,14 +1,10 @@
 import { WebSocketServer } from "ws";
 import { ServerEvents } from "../utils/serverevents";
 import { WebsocketEvents } from "../utils/websocketevents";
-import { Room } from "../interfaces/room";
-
-var room: Room = {
-  room1: [],
-};
+import { env } from "../utils/helper";
 
 export const wss = new WebSocketServer({
-  port: 8080,
+  port: parseInt(env("WS_PORT")),
   perMessageDeflate: {
     zlibDeflateOptions: {
       // See zlib defaults.
@@ -32,20 +28,15 @@ export const wss = new WebSocketServer({
 
 wss.on(ServerEvents.connection, function connection(ws) {
   console.log(`Online users : ${wss.clients.size}`);
-  room.room1.push(ws);
 
   ws.on(WebsocketEvents.close, function close() {
     console.log("connection closed");
     console.log(`Online users : ${wss.clients.size}`);
-
-    // remove from list room
-    room.room1.splice(room.room1.indexOf(ws), 1);
   });
 
   ws.on(WebsocketEvents.message, function message(data) {
-    console.log("received: %s", data);
     ws.send("you sent: " + data);
-
-    console.log(`User in room 1 : ${room.room1.length}`);
   });
 });
+
+console.log("websocket at port ", env("WS_PORT"));
