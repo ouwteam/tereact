@@ -6,7 +6,6 @@ import messagerRoute from "./routes/messager.route";
 import userRoute from "./routes/user.route";
 import roomRoute from "./routes/room.route";
 import { env } from "./utils/helper";
-import sequelize from './servers/database';
 
 initHttpServer(parseInt(env("APP_PORT")), "localhost", wss);
 registerRouters(function (app, wss) {
