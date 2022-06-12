@@ -11,9 +11,7 @@ export function handleBroadcast(req: Request, res: Response, wss?: WebSocketServ
 
     var message = req.query.message;
     wss?.clients.forEach(function (ws: WebSocket) {
-        ws.send(message, function onError(err) {
-            console.error(err);
-        });
+        ws.send(message);
     });
 
     return res.send({
