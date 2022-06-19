@@ -1,28 +1,32 @@
-import { DataTypes, Model } from 'sequelize';
-import sequelize from '../servers/database';
+import { DataTypes, Model } from "sequelize";
+import sequelize from "../servers/database";
 
 export class User extends Model {
-    declare id: number;
-    declare username: string;
-    declare password?: string;
+  declare id: number;
+  declare username: string;
+  declare password?: string;
 }
 
-User.init({
+User.init(
+  {
     id: {
-        type: DataTypes.INTEGER,
-        autoIncrement: true,
-        primaryKey: true
+      type: DataTypes.INTEGER,
+      autoIncrement: true,
+      primaryKey: true,
     },
     username: {
-        type: DataTypes.STRING,
+      type: DataTypes.STRING,
     },
     password: {
-        type: DataTypes.STRING,
+      type: DataTypes.STRING,
     },
-}, {
-    sequelize, scopes: {
-        withoutPassword: {
-            attributes: { exclude: ['password'] },
-        }
-    }
-});
+  },
+  {
+    sequelize,
+    scopes: {
+      withoutPassword: {
+        attributes: { exclude: ["password"] },
+      },
+    },
+  }
+);

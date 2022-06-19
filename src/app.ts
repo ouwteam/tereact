@@ -1,4 +1,4 @@
-import 'dotenv/config';
+import "dotenv/config";
 import { handleIndex } from "./routes/main.route";
 import { initHttpServer, registerRouters } from "./servers/www";
 import messagerRoute from "./routes/messager.route";

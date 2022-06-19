@@ -1,32 +1,35 @@
-import { DataTypes, Model } from 'sequelize';
-import sequelize from '../servers/database';
-import { RoomUser } from './room_user.model';
+import { DataTypes, Model } from "sequelize";
+import sequelize from "../servers/database";
+import { RoomUser } from "./room_user.model";
 
 export class Room extends Model {
-    declare id: number;
-    declare title?: string;
-    declare description?: string;
-    declare room_type: string;
+  declare id: number;
+  declare title?: string;
+  declare description?: string;
+  declare room_type: string;
 }
 
-Room.init({
+Room.init(
+  {
     id: {
-        type: DataTypes.INTEGER,
-        autoIncrement: true,
-        primaryKey: true
+      type: DataTypes.INTEGER,
+      autoIncrement: true,
+      primaryKey: true,
     },
     title: {
-        type: DataTypes.STRING,
+      type: DataTypes.STRING,
     },
     description: {
-        type: DataTypes.STRING,
+      type: DataTypes.STRING,
     },
     room_type: {
-        type: DataTypes.STRING,
+      type: DataTypes.STRING,
     },
-}, { sequelize });
+  },
+  { sequelize }
+);
 
 Room.hasMany(RoomUser, {
-    foreignKey: 'room_id',
-    as: 'participants',
+  foreignKey: "room_id",
+  as: "participants",
 });

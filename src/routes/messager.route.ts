@@ -8,7 +8,7 @@ router.get("/broadcast", (req, res) => handleBroadcast(req, res, _io));
 router.post("/send-to-room", (req, res) => handleSendToRoom(req, res, _io));
 
 function setSocketServer(io: Server) {
-    _io = io;
+  _io = io;
 }
 
 export = { router, setSocketServer };

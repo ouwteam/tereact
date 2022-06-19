@@ -1,5 +1,9 @@
 import express from "express";
-import { handleDetailUser, handleLogin, handleRegistration } from "../services/user";
+import {
+  handleDetailUser,
+  handleLogin,
+  handleRegistration,
+} from "../services/user";
 
 const router = express.Router();
 router.post("/login", handleLogin);
