@@ -7,13 +7,13 @@ export async function handleRegistration(req: Request, res: Response) {
     const post = req.body;
     if (!post.username) {
         return res.status(400).send({
-            error: "username is required",
+            message: "username is required",
         });
     }
 
     if (!post.password) {
         return res.status(400).send({
-            error: "password is required",
+            message: "password is required",
         });
     }
 
@@ -36,12 +36,12 @@ export async function handleRegistration(req: Request, res: Response) {
         console.error(error);
         error = typeof error == "string" ? error : "Gagal menyimpan data";
         return res.status(400).send({
-            error: error,
+            message: error,
         });
     }
 
     return res.send({
-        error: null,
+        message: null,
         data: {
             user: userData
         }
@@ -52,13 +52,13 @@ export async function handleLogin(req: Request, res: Response) {
     const post = req.body;
     if (!post.username) {
         return res.status(400).send({
-            error: "username is required",
+            message: "username is required",
         });
     }
 
     if (!post.password) {
         return res.status(400).send({
-            error: "password is required",
+            message: "password is required",
         });
     }
 
@@ -81,13 +81,13 @@ export async function handleLogin(req: Request, res: Response) {
         console.error(error);
         error = typeof error == "string" ? error : "Gagal menyimpan data";
         return res.status(400).send({
-            error: error,
+            message: error,
         });
     }
 
     userData.password = undefined;
     return res.send({
-        error: null,
+        message: null,
         data: {
             user: userData
         }
@@ -99,13 +99,13 @@ export async function handleDetailUser(req: Request, res: Response) {
     const userData = await User.findByPk(user_id);
     if(!userData) {
         return res.status(400).send({
-            error: "User not found",
+            message: "User not found",
         });
     }
 
     userData.password = undefined;
     return res.send({
-        error: null,
+        message: null,
         user: userData
     });
 }

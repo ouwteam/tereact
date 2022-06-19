@@ -19,4 +19,10 @@ User.init({
     password: {
         type: DataTypes.STRING,
     },
-}, { sequelize });
+}, {
+    sequelize, scopes: {
+        withoutPassword: {
+            attributes: { exclude: ['password'] },
+        }
+    }
+});

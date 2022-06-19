@@ -1,5 +1,6 @@
 import { DataTypes, Model } from 'sequelize';
 import sequelize from '../servers/database';
+import { RoomUser } from './room_user.model';
 
 export class Room extends Model {
     declare id: number;
@@ -24,3 +25,8 @@ Room.init({
         type: DataTypes.STRING,
     },
 }, { sequelize });
+
+Room.hasMany(RoomUser, {
+    foreignKey: 'room_id',
+    as: 'participants',
+});

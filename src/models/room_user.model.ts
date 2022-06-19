@@ -1,5 +1,6 @@
 import { DataTypes, Model } from 'sequelize';
 import sequelize from '../servers/database';
+import { User } from './user.model';
 
 export class RoomUser extends Model {
     declare id: number;
@@ -19,4 +20,9 @@ RoomUser.init({
     user_id: {
         type: DataTypes.INTEGER,
     },
-}, { sequelize });
+}, { tableName: "room_users", sequelize });
+
+RoomUser.belongsTo(User, {
+    foreignKey: 'user_id',
+    as: 'user',
+});
