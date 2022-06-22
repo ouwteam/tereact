@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { Room } from "../models/room.model";
 import { RoomUser } from "../models/room_user.model";
 import { User } from "../models/user.model";
+import sequelize from "../servers/database";
 
 export async function createRoom(req: Request, res: Response) {
   var post = req.body;
@@ -64,7 +65,7 @@ export async function getRoomDetail(req: Request, res: Response) {
 
 export async function addUserToRoom(req: Request, res: Response) {
   const room_id = req.params.room_id;
-  const user_id = req.body.user_id;
+  const user_ids: number[] = req.body.user_ids;
   const roomData = await Room.findByPk(room_id);
   if (!roomData) {
     return res.status(400).send({
@@ -73,39 +74,58 @@ export async function addUserToRoom(req: Request, res: Response) {
     });
   }
 
-  var check = await RoomUser.findAll({
-    where: {
+  const t = await sequelize.transaction();
+  user_ids.forEach(async user_id => {
+    var check = await RoomUser.findAll({
+      where: {
+        room_id: room_id,
+        user_id: user_id,
+      },
+    });
+
+    if (check.length > 0) {
+      return res.status(400).send({
+        ok: false,
+        message: "User already in room",
+      });
+    }
+
+    var roomUser: RoomUser = new RoomUser({
       room_id: room_id,
-      user_id: user_id,
-    },
-  });
-  if (check.length > 0) {
-    return res.status(400).send({
-      ok: false,
-      message: "User already in room",
+      user_id: user_ids,
     });
-  }
 
-  var roomUser: RoomUser = new RoomUser({
-    room_id: room_id,
-    user_id: user_id,
+    try {
+      await roomUser.save({ transaction: t });
+    } catch (error) {
+      t.rollback();
+      console.error(error);
+      return res.status(400).send({
+        ok: false,
+        message: "add user to room failed",
+      });
+    }
   });
 
-  var createdRoomUser = null;
-  try {
-    createdRoomUser = await roomUser.save();
-  } catch (error) {
-    console.error(error);
-    return res.status(400).send({
-      ok: false,
-      message: "add user to room failed",
-    });
-  }
-
+  t.commit();
+  const roomUser = await Room.findByPk(room_id, {
+    include: [
+      {
+        model: RoomUser,
+        as: "participants",
+        include: [
+          {
+            model: User.scope("withoutPassword"),
+            as: "user",
+          },
+        ],
+      },
+    ]
+  });
   return res.send({
     ok: true,
     data: {
-      roomUser: createdRoomUser,
+      roomUser: roomUser,
     },
   });
 }
