@@ -4,6 +4,7 @@ import { initHttpServer, registerRouters } from "./servers/www";
 import messagerRoute from "./routes/messager.route";
 import userRoute from "./routes/user.route";
 import roomRoute from "./routes/room.route";
+import contactRoute from "./routes/contact.route";
 import { env } from "./utils/helper";
 
 initHttpServer(parseInt(env("APP_PORT")), "localhost");
@@ -14,6 +15,7 @@ registerRouters(function (app, io) {
   app.use("/messenger", messagerRoute.router);
   app.use("/user", userRoute.router);
   app.use("/room", roomRoute.router);
+  app.use("/contact", contactRoute.router);
 });
 
 console.log("HTTP server at port", env("APP_PORT"));
