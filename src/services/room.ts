@@ -6,16 +6,61 @@ import sequelize from "../servers/database";
 
 export async function createRoom(req: Request, res: Response) {
   var post = req.body;
+  if(!post.room_type || post.room_type == "") {
+    return res.status(400).send({
+      ok: false,
+      message: "Room type are required",
+    });
+  }
+
+  if(!post.user_ids || !Array.isArray(post.user_ids)) {
+    return res.status(400).send({
+      ok: false,
+      message: "user_ids is required and should an array or list of user_id",
+    });
+  }
+
   var room: Room = new Room({
     title: post.title,
     description: post.description,
     room_type: post.room_type,
   });
 
-  var createdRoom = null;
+  var createdRoom: Room;
+  const t = await sequelize.transaction();
   try {
-    createdRoom = await room.save();
+    createdRoom = await room.save({
+      transaction: t
+    });
+
+    const user_ids: number[] = req.body.user_ids;
+    for (let index = 0; index < user_ids.length; index++) {
+      const user_id = user_ids[index];
+      var check = await RoomUser.findAll({
+        where: {
+          room_id: createdRoom.id,
+          user_id: user_id,
+        },
+      });
+
+      if (check.length > 0) {
+        return res.status(400).send({
+          ok: false,
+          message: "User already in room",
+        });
+      }
+
+      var roomUser: RoomUser = new RoomUser({
+        room_id: createdRoom.id,
+        user_id: user_id,
+      });
+
+      await roomUser.save({ transaction: t });
+    }
+
+    t.commit();
   } catch (error) {
+    t.rollback();
     console.error(error);
 
     return res.status(400).send({
@@ -48,6 +93,7 @@ export async function getRoomDetail(req: Request, res: Response) {
       },
     ],
   });
+
   if (!roomData) {
     return res.status(400).send({
       ok: false,
@@ -67,6 +113,7 @@ export async function addUserToRoom(req: Request, res: Response) {
   const room_id = req.params.room_id;
   const user_ids: number[] = req.body.user_ids;
   const roomData = await Room.findByPk(room_id);
+
   if (!roomData) {
     return res.status(400).send({
       ok: false,
@@ -122,6 +169,7 @@ export async function addUserToRoom(req: Request, res: Response) {
       },
     ]
   });
+
   return res.send({
     ok: true,
     data: {
