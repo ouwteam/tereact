@@ -1,13 +1,18 @@
-import { BelongsToGetAssociationMixin, DataTypes, HasManyGetAssociationsMixin, Model } from "sequelize";
+import { BelongsToGetAssociationMixin, DataTypes, Model } from "sequelize";
 import sequelize from "../servers/database";
 import { User } from "./user.model";
 
 export class Contact extends Model {
   declare id: number;
-  declare title?: string;
-  declare description?: string;
-  declare room_type: string;
-
+  declare user_id: number;
+  declare guest_id: number;
+  declare alias?: string;
+  declare lastInteract?: Date;
+  declare snapshot?: string;
+  declare createdAt: Date;
+  declare updatedAt: Date;
+  
+  declare user?: User;
   declare getUser: BelongsToGetAssociationMixin<User>;
 }
 
@@ -27,8 +32,16 @@ Contact.init(
     alias: {
       type: DataTypes.STRING,
     },
+    snapshot: {
+      type: DataTypes.STRING,
+    },
+    lastInteract: {
+      type: DataTypes.DATE,
+    },
   },
-  { sequelize }
+  {
+    sequelize
+  }
 );
 
 Contact.belongsTo(User, {

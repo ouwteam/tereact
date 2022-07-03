@@ -7,7 +7,7 @@ import roomRoute from "./routes/room.route";
 import contactRoute from "./routes/contact.route";
 import { env } from "./utils/helper";
 
-initHttpServer(parseInt(env("APP_PORT")), "localhost");
+initHttpServer(parseInt(env("APP_PORT")), "0.0.0.0");
 registerRouters(function (app, io) {
   messagerRoute.setSocketServer(io);
 
@@ -17,5 +17,3 @@ registerRouters(function (app, io) {
   app.use("/room", roomRoute.router);
   app.use("/contact", contactRoute.router);
 });
-
-console.log("HTTP server at port", env("APP_PORT"));

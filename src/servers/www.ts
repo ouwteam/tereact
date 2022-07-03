@@ -43,7 +43,9 @@ export function initHttpServer(port: number, hostname: string) {
     console.log("a user disconnected");
   });
 
-  server.listen(port, hostname);
+  server.listen(port, hostname, () => {
+    console.log(server.address());
+  });
 }
 
 export function registerRouters(

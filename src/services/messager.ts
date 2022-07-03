@@ -1,9 +1,11 @@
 import { Request, Response } from "express";
 import { Server } from "socket.io";
+import { Contact } from "../models/contact.model";
 import { Room } from "../models/room.model";
 import { RoomMessage } from "../models/room_message.model";
 import { RoomUser } from "../models/room_user.model";
 import { User } from "../models/user.model";
+import { Op } from "sequelize";
 
 export function handleBroadcast(req: Request, res: Response, io: Server) {
   if (!req.query.message) {
@@ -52,6 +54,32 @@ export async function handleSendToRoom(req: Request, res: Response, io: Server) 
       ok: false,
       message: "Room not found",
     });
+  }
+
+  if(row.room_type == "PRIVATE") {
+    var participants = await row.getParticipants({
+      where: {
+        user_id: {
+          [Op.ne]: post.user_id
+        }
+      }
+    });
+
+    for (let i = 0; i < participants.length; i++) {
+      const participant = participants[i];
+      const contact = await Contact.findOne({
+        where: {
+          user_id: participant.user_id,
+          guest_id: post.user_id,
+        }
+      });
+
+      if(contact != null) {
+        contact.snapshot = post.message;
+        contact.lastInteract = new Date(Date.now());
+        contact.save();
+      }
+    }
   }
 
   // check, is sender blongs to room?
@@ -137,7 +165,8 @@ export async function handleGetMessages(req: Request, res: Response) {
     ],
     order: [
       ['createdAt', 'desc']
-    ]
+    ],
+    limit: 25,
   });
 
   return res.send({

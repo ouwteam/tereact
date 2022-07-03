@@ -1,4 +1,4 @@
-import { DataTypes, Model } from "sequelize";
+import { DataTypes, HasManyGetAssociationsMixin, Model } from "sequelize";
 import sequelize from "../servers/database";
 import { RoomUser } from "./room_user.model";
 
@@ -7,6 +7,8 @@ export class Room extends Model {
   declare title?: string;
   declare description?: string;
   declare room_type: string;
+
+  declare getParticipants: HasManyGetAssociationsMixin<RoomUser>;
 }
 
 Room.init(
