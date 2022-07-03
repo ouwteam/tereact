@@ -1,5 +1,6 @@
-import { DataTypes, Model } from "sequelize";
+import { BelongsToGetAssociationMixin, DataTypes, Model } from "sequelize";
 import sequelize from "../servers/database";
+import { User } from "./user.model";
 
 export class RoomMessage extends Model {
   declare id: number;
@@ -7,6 +8,8 @@ export class RoomMessage extends Model {
   declare user_id: number;
   declare message_text: string;
   declare attachments?: string;
+
+  declare getSender: BelongsToGetAssociationMixin<User>;
 }
 
 RoomMessage.init(
@@ -29,5 +32,13 @@ RoomMessage.init(
       type: DataTypes.STRING,
     },
   },
-  { sequelize }
+  {
+    sequelize, 
+    tableName: "room_messages",
+  }
 );
+
+RoomMessage.belongsTo(User, {
+  foreignKey: "user_id",
+  as: "sender",
+});
