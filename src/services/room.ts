@@ -3,6 +3,7 @@ import { Room } from "../models/room.model";
 import { RoomUser } from "../models/room_user.model";
 import { User } from "../models/user.model";
 import sequelize from "../servers/database";
+import { getSamePrivateRoom } from "../utils/helper";
 
 export async function createRoom(req: Request, res: Response) {
   var post = req.body;
@@ -26,47 +27,50 @@ export async function createRoom(req: Request, res: Response) {
     room_type: post.room_type,
   });
 
-  var createdRoom: Room;
-  const t = await sequelize.transaction();
-  try {
-    createdRoom = await room.save({
-      transaction: t
-    });
-
-    const user_ids: number[] = req.body.user_ids;
-    for (let index = 0; index < user_ids.length; index++) {
-      const user_id = user_ids[index];
-      var check = await RoomUser.findAll({
-        where: {
+  const user_ids: number[] = req.body.user_ids;
+  var createdRoom: Room | null;
+  createdRoom = await getSamePrivateRoom(user_ids[0], user_ids[1]);
+  if(createdRoom == null) {
+    const t = await sequelize.transaction();
+    try {
+      createdRoom = await room.save({
+        transaction: t
+      });
+  
+      for (let index = 0; index < user_ids.length; index++) {
+        const user_id = user_ids[index];
+        var check = await RoomUser.findAll({
+          where: {
+            room_id: createdRoom.id,
+            user_id: user_id,
+          },
+        });
+  
+        if (check.length > 0) {
+          return res.status(400).send({
+            ok: false,
+            message: "User already in room",
+          });
+        }
+  
+        var roomUser: RoomUser = new RoomUser({
           room_id: createdRoom.id,
           user_id: user_id,
-        },
-      });
-
-      if (check.length > 0) {
-        return res.status(400).send({
-          ok: false,
-          message: "User already in room",
         });
+  
+        await roomUser.save({ transaction: t });
       }
-
-      var roomUser: RoomUser = new RoomUser({
-        room_id: createdRoom.id,
-        user_id: user_id,
+  
+      t.commit();
+    } catch (error) {
+      t.rollback();
+      console.error(error);
+  
+      return res.status(400).send({
+        ok: false,
+        message: "create room failed",
       });
-
-      await roomUser.save({ transaction: t });
     }
-
-    t.commit();
-  } catch (error) {
-    t.rollback();
-    console.error(error);
-
-    return res.status(400).send({
-      ok: false,
-      message: "create room failed",
-    });
   }
 
   return res.send({

@@ -26,7 +26,7 @@ export async function getSamePrivateRoom(userId: number, guestId: number) {
     mapToModel: true
   });
 
-  if (rows.length == 1) {
+  if (rows.length > 0) {
     return rows[0];
   }
 

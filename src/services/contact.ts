@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
 import { Contact } from "../models/contact.model";
 import { User } from "../models/user.model";
-import { getSamePrivateRoom } from "../utils/helper";
 
 export async function getListRoom(req: Request, res: Response) {
     if (!req.query.user_id) {
@@ -31,28 +30,10 @@ export async function getListRoom(req: Request, res: Response) {
         ]
     });
 
-    var output = [];
-    for (let i = 0; i < rows.length; i++) {
-        const row = rows[i];
-        var a = {
-            user_id: row.user_id,
-            guest_id: row.guest_id,
-            alias: row.alias,
-            snapshot: row.snapshot,
-            lastInteract: row.lastInteract,
-            createdAt: row.createdAt,
-            updatedAt: row.updatedAt,
-            user: row.user,
-            room: await getSamePrivateRoom(row.user_id, row.guest_id),
-        }
-
-        output.push(a);
-    }
-
     return res.send({
         ok: true,
         data: {
-            contacts: output
+            contacts: rows
         }
     });
 }
