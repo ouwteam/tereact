@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import { Op, WhereOptions, Sequelize } from "sequelize";
 import { Contact } from "../models/contact.model";
 import { User } from "../models/user.model";
 
@@ -19,17 +20,40 @@ export async function getListRoom(req: Request, res: Response) {
         });
     }
 
-    var rows = await Contact.findAll({
-        where: {
-            user_id: user.id
-        }, include: [
+    var relationCriteria: WhereOptions | undefined;
+    var criteria: WhereOptions = { user_id: user.id };
+    if (req.query.search) {
+        const search = req.query.search;
+        criteria = Sequelize.or(
             {
+                user_id: user.id
+            },
+            Sequelize.or(
+                {
+                    alias: { [Op.like]: `%${search}%` },
+                },
+                {
+                    snapshot: { [Op.like]: `%${search}%` },
+                },
+            ),
+        );
+        relationCriteria = Sequelize.or(
+            {
+                username: { [Op.like]: `%${search}%` },
+            }
+        );
+    }
+
+    var rows = await Contact.findAll({
+        where: criteria,
+        include: [
+            {
+                where: relationCriteria,
                 model: User.scope("withoutPassword"),
                 as: "user",
             },
         ]
     });
-
     return res.send({
         ok: true,
         data: {
@@ -117,8 +141,8 @@ export async function addContact(req: Request, res: Response) {
 
     const user_id = req.body.user_id;
     const guest_id = req.body.guest_id;
-    const rows = await Contact.count({where: { user_id: user_id, guest_id: guest_id }});
-    if(rows > 0) {
+    const rows = await Contact.count({ where: { user_id: user_id, guest_id: guest_id } });
+    if (rows > 0) {
         return res.status(400).send({
             ok: false,
             message: "User is already in your contact"
@@ -145,7 +169,7 @@ export async function addContact(req: Request, res: Response) {
         ok: true,
         data: {
             contact: contact,
-            user: await contact.getUser({scope: ['withoutPassword']})
+            user: await contact.getUser({ scope: ['withoutPassword'] })
         },
     });
 }
