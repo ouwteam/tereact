@@ -87,6 +87,7 @@ export async function handleLogin(req: Request, res: Response) {
 
   userData.password = undefined;
   return res.send({
+    ok: true,
     message: null,
     data: {
       user: userData,
@@ -105,7 +106,10 @@ export async function handleDetailUser(req: Request, res: Response) {
 
   userData.password = undefined;
   return res.send({
+    ok: true,
     message: null,
-    user: userData,
+    data: {
+      user: userData,
+    }
   });
 }
